@@ -122,7 +122,9 @@ app.post("/login", async (req, res) => {
       // If not found in Admins, check in Users collection
       user = await UserModel.findOne({ email });
     }
-
+    if (!user) {
+      return res.status(404).json({ error: 'Email does not exist' });
+    }
     if (user) {
       // Use the correct password field based on admin or user login
       const isPasswordValid = isAdmin 

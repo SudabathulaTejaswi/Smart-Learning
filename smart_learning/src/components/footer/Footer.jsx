@@ -9,7 +9,7 @@ return (
     <div className="sb_footer section_padding">
         <div className="sb_footer-links">
             <div className="sb_footer-links-div">
-            <img src="src\assets\icon.png" alt="" />
+            <img src="smart_learning\src\assets\mainlogo.png" alt="" />
             <Link to="" className="nav-link text-white">
              <h2>Skill Forge </h2>
           </Link>

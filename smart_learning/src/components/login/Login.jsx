@@ -3,108 +3,83 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FaExclamationCircle, FaUser } from 'react-icons/fa';
-import { useAuth } from '../../AuthContext'; // Import useAuth to manage login state
-import './Login.css';
+import { useAuth } from '../../AuthContext';
 
-function Login() {
+function Login({ toggleSignup }) {
   const { register, handleSubmit, formState: { errors } } = useForm();
- // Destructure login function
   const { login } = useAuth();
   const navigate = useNavigate();
-  
-  // State for managing login error message
   const [loginError, setLoginError] = useState("");
 
   const onUserSignin = async (data) => {
     try {
       const { email, password } = data;
-
-      // Make a POST request to the login endpoint
-      const result = await axios.post("http://localhost:3001/login", { email, password });
+      const endpoint = "http://localhost:3001/login";
+      const result = await axios.post(endpoint, { email, password });
 
       if (result.status === 200) {
         const user = result.data.user;
-        login(user); // Call login to set isAuthenticated to true
-
-        // Check user role and navigate accordingly
-        if (user.role === 'admin') {
-          navigate("/adminhome"); // Redirect admin to admin home page
-        } else {
-          navigate("/webhome"); // Redirect user to user home page
-        }
+        login(user);
+        user.role === 'admin' ? navigate("/adminhome") : navigate("/webhome");
       } else {
         console.log("Login failed:", result.data.error || "Unknown error");
       }
     } catch (err) {
-      // Handle error and set error message if login fails
-      if (err.response && err.response.status === 401) {
+      if (err.response?.status === 401) {
         setLoginError("Invalid email or password.");
       } else {
-        console.error("Login error:", err.response?.data?.error || err.message);
+        console.error("Login error:", err);
         setLoginError("An unexpected error occurred. Please try again.");
       }
     }
   };
+
   return (
-    <div className="containers">
-      <div className="signin-container">
-        <div className="signin-leftmenu">
-          <h2>Welcome Back</h2>
-          <p>Please sign in to continue</p>
-          <button className="signup-btn" onClick={() => navigate("/signup")}>
-            Sign Up
-          </button>
-        </div>
-        <div className="signin-form-wrapper">
-          <h2 className="text-center">
-            <FaUser className="profile-icon" /> Sign In
-          </h2>
-          <form onSubmit={handleSubmit(onUserSignin)} className="signin-form">
-            <div className="form-group">
-              <input
-                type="email"
-                placeholder="Your Email *"
-                className={`form-control ${errors.email ? "is-invalid" : ""}`}
-                {...register("email", { required: "Email is required" })}
-              />
-              {errors.email && (
-                <span className="error-text">
-                  <FaExclamationCircle /> {errors.email.message}
-                </span>
-              )}
-            </div>
+    <div style={cardWrapperStyle}>
+      <div style={cardStyle}>
+        <h2 style={headerStyle}>
+          <FaUser style={iconStyle} /> Sign In
+        </h2>
 
-            <div className="form-group">
-              <input
-                type="password"
-                placeholder="Password *"
-                className={`form-control ${errors.password ? "is-invalid" : ""}`}
-                {...register("password", { required: "Password is required" })}
-              />
-              {errors.password && (
-                <span className="error-text">
-                  <FaExclamationCircle /> {errors.password.message}
-                </span>
-              )}
-            </div>
+        <form onSubmit={handleSubmit(onUserSignin)} style={{ width: '100%' }}>
+          <div style={{ marginBottom: '15px' }}>
+            <input
+              type="email"
+              placeholder="Your Email *"
+              style={inputStyle}
+              {...register("email", { required: "Email is required" })}
+            />
+            {errors.email && <span style={errorStyle}><FaExclamationCircle /> {errors.email.message}</span>}
+          </div>
 
-            {/* Display login error message */}
-            {loginError && <div className="error-message">{loginError}</div>}
+          <div style={{ marginBottom: '15px' }}>
+            <input
+              type="password"
+              placeholder="Password *"
+              style={inputStyle}
+              {...register("password", { required: "Password is required" })}
+            />
+            {errors.password && <span style={errorStyle}><FaExclamationCircle /> {errors.password.message}</span>}
+          </div>
 
-            <div className="forgot-password">
-              <p onClick={() => navigate("/forgot-password")}>
-                Forgotten Password?
-              </p>
-            </div>
+          {loginError && <div style={errorStyle}>{loginError}</div>}
 
-            <button className="btn btn-primary btn-block mt-4" type="submit">
-              Sign In
-            </button>
-          </form>
-        </div>
+          <button type="submit" style={submitButtonStyle}>Sign In</button>
+        </form>
+
+        <button onClick={toggleSignup} style={switchButtonStyle}>Sign Up</button>
       </div>
     </div>
   );
 }
+
+const cardWrapperStyle = { display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '30px', backgroundColor: '#f4f4f4' };
+const cardStyle = { display: 'flex', backgroundColor: '#fff', borderRadius: '10px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)', padding: '40px', width: '350px', flexDirection: 'column', textAlign: 'center', margin: '20px' };
+const headerStyle = { marginBottom: '20px', color: '#333' };
+const iconStyle = { fontSize: '2.5rem', color: '#1e3c72' };
+const inputStyle = { width: '100%', padding: '10px', fontSize: '1rem', borderRadius: '5px', border: '1px solid #ccc', marginBottom: '5px' };
+const errorStyle = { color: 'red', fontSize: '0.85rem', marginBottom: '15px' };
+const submitButtonStyle = { width: '100%', padding: '12px', fontSize: '1.1rem', backgroundColor: '#1e3c72', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer' };
+const switchButtonStyle = { marginTop: '20px', width: '100%', padding: '10px', fontSize: '1rem', backgroundColor: '#ccc', color: '#333', border: 'none', borderRadius: '5px', cursor: 'pointer' };
 
 export default Login;
